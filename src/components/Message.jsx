@@ -3,7 +3,7 @@ import Ayano from '../image/Ayanokoji.png'
 
 const Message = () => {
   return (
-    <div className='message'>
+    <div className='message owner'>
       <div className="messageInfo">
         <img src={Ayano} alt="" />
         <span>Just Now</span>
