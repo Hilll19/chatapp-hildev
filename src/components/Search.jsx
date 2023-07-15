@@ -4,9 +4,9 @@ import Killua from '../image/killua.jpg'
 
 const Search = () => {
   return (
-    <div className='Search'>
+    <div className='search'>
       <div className="searchForm">
-        <input type="text" />
+        <input type="text" placeholder='Find a User'/>
       </div>
       <div className="userChat">
         <img src={Killua} alt="" />
