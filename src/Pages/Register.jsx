@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import Add from "../image/label.png";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, storage } from "../firebase";
-import {  ref, uploadBytesResumable, getDownloadURL,} from "firebase/storage";
+import { auth, db, storage } from "../firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc, setDoc } from "firebase/firestore";
 
 export const Register = () => {
   const [err, setErr] = useState(false);
+
   const handleSubmit = async (e) => {
-    // So that when we click button, page wont reload
     e.preventDefault();
-    // for checking what we want to input value can check console.log(e.target[0].value)
     const displayName = e.target[0].value;
     const email = e.target[1].value;
     const password = e.target[2].value;
@@ -17,20 +17,28 @@ export const Register = () => {
 
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(res);
-      const storageRef = ref(storage, displayName);
 
+      const storageRef = ref(storage, displayName);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       uploadTask.on(
-        (error) => {
+        "state_changed",
+        (snapshot) => {
+          // Handle upload progress if needed
         },
-        () => {
-          // Handle successful uploads on complete
-          // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-          getDownloadURL(uploadTask.snapshot.ref).then( async(downloadURL) => {
-            await updateProfile(res.user,{})
+        (error) => {
+          setErr(true);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          await updateProfile(res.user, {
             displayName,
+            photoURL: downloadURL,
+          });
+          await setDoc(doc(db, "users", res.user.uid), {
+            uid: res.user.uid,
+            displayName,
+            email,
             photoURL: downloadURL,
           });
         }
@@ -57,7 +65,7 @@ export const Register = () => {
           <button>sign up</button>
           {err && <span>Something went wrong</span>}
         </form>
-        <p>You do have an account ? Login</p>
+        <p>You already have an account? Login</p>
       </div>
     </div>
   );
